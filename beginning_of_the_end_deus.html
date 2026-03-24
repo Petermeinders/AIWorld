@@ -1,0 +1,2655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI: The Unmaking of the Soul</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold:       #C8960A;
+  --gold-bright:#F0B429;
+  --gold-dim:   #7A5A04;
+  --gold-glow:  rgba(200,150,10,0.35);
+  --amber:      #E8A020;
+  --amber-pale: rgba(232,160,32,0.12);
+  --glass:      rgba(200,150,10,0.08);
+  --glass-mid:  rgba(200,150,10,0.15);
+  --glass-hi:   rgba(240,180,41,0.25);
+  --black:      #060504;
+  --dark:       #0C0A06;
+  --dark2:      #110E07;
+  --dark3:      #18140A;
+  --text:       #C8A860;
+  --text-dim:   #7A6030;
+  --text-hi:    #F0D070;
+  --border:     rgba(200,150,10,0.25);
+  --border-hi:  rgba(240,180,41,0.5);
+  --scan:       rgba(200,150,10,0.04);
+  --mono: 'Share Tech Mono', monospace;
+  --display: 'Orbitron', sans-serif;
+  --body: 'Rajdhani', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ─── SCANLINES ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--scan) 2px,
+    var(--scan) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ─── TRIANGLE CANVAS ─── */
+#tri-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── EVERYTHING ABOVE CANVAS ─── */
+nav, .hero, main, footer { position: relative; z-index: 1; }
+
+/* ─── NAV ─── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: 52px;
+  background: rgba(6,5,4,0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  overflow: hidden;
+}
+
+nav::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  opacity: 0.6;
+}
+
+.nav-logo {
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.nav-logo span { color: var(--text-dim); font-weight: 400; }
+
+.nav-links { display: flex; gap: 28px; list-style: none; }
+
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 1px;
+  background: var(--gold-bright);
+  transform: scaleX(0);
+  transition: transform 0.2s;
+}
+
+.nav-links a:hover { color: var(--gold-bright); }
+.nav-links a:hover::after { transform: scaleX(1); }
+
+/* ─── HUD CORNER BRACKETS ─── */
+.hud-corner {
+  position: absolute;
+  width: 20px; height: 20px;
+}
+.hud-corner::before, .hud-corner::after {
+  content: '';
+  position: absolute;
+  background: var(--gold-bright);
+}
+.hud-corner::before { width: 100%; height: 1px; }
+.hud-corner::after  { width: 1px; height: 100%; }
+.hud-corner.tl { top: 0; left: 0; }
+.hud-corner.tr { top: 0; right: 0; transform: scaleX(-1); }
+.hud-corner.bl { bottom: 0; left: 0; transform: scaleY(-1); }
+.hud-corner.br { bottom: 0; right: 0; transform: scale(-1); }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 40px;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(200,150,10,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse at 30% 30%, rgba(200,150,10,0.06) 0%, transparent 50%);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* animated hex grid in hero */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.3;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: '';
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+
+.hero-eyebrow::after { transform: scaleX(-1); }
+
+.hero-title {
+  font-family: var(--display);
+  font-size: clamp(40px, 9vw, 108px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: 0.06em;
+  color: var(--text-hi);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  text-shadow: 0 0 60px rgba(200,150,10,0.4), 0 0 120px rgba(200,150,10,0.15);
+  position: relative;
+}
+
+.hero-title .accent { color: var(--gold-bright); }
+
+.hero-subtitle {
+  font-family: var(--body);
+  font-size: clamp(15px, 2vw, 20px);
+  font-weight: 300;
+  color: var(--text-dim);
+  max-width: 580px;
+  margin: 20px auto 0;
+  letter-spacing: 0.06em;
+}
+
+.hero-status {
+  margin-top: 48px;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  background: var(--gold-bright);
+  border-radius: 50%;
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.hero-status p {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+/* ─── SECTION BASE ─── */
+main section {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 90px 40px;
+}
+
+.section-eyebrow {
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: bold;
+}
+
+.section-eyebrow::before {
+  content: '//';
+  opacity: 0.5;
+}
+
+.section-title {
+  font-family: var(--display);
+  font-size: clamp(30px, 5vw, 62px);
+  font-weight: 700;
+  line-height: 0.95;
+  color: var(--text-hi);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 32px;
+}
+
+.section-body { font-size: 16px; color: var(--text); line-height: 1.8; max-width: 740px; font-weight: 400; }
+.section-body p + p { margin-top: 16px; }
+
+.hl     { color: var(--text-hi); font-weight: 600; }
+.hl-gold { color: var(--gold-bright); font-weight: 600; }
+.hl-red  { color: #E06020; font-weight: 600; }
+
+/* ─── DIVIDER ─── */
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-hi), transparent);
+  margin: 0;
+}
+
+.band {
+  background: var(--dark2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.band::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  animation: sweep 6s linear infinite;
+}
+@keyframes sweep { to { left: 200%; } }
+
+/* ─── HUD PANEL (scene block) ─── */
+.hud-panel {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  position: relative;
+  padding: 36px 44px;
+  margin: 44px 0;
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+}
+
+.hud-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--glass-hi) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.hud-panel-label {
+  position: absolute;
+  top: 1px;
+  background: var(--dark2);
+  padding: 0 10px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.hud-panel h3 {
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-hi);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-panel h3::before {
+  content: '';
+  width: 3px; height: 16px;
+  background: var(--gold-bright);
+  flex-shrink: 0;
+}
+
+.hud-panel p { color: var(--text); font-size: 15px; line-height: 1.8; }
+.hud-panel p + p { margin-top: 12px; }
+
+/* ─── PULLQUOTE ─── */
+blockquote {
+  position: relative;
+  padding: 32px 40px 32px 48px;
+  margin: 48px 0;
+  background: var(--glass);
+  border-left: 2px solid var(--gold-bright);
+}
+
+blockquote::before {
+  content: '"';
+  position: absolute;
+  top: 8px; left: 16px;
+  font-size: 80px;
+  line-height: 1;
+  color: var(--gold-dim);
+  font-family: Georgia, serif;
+}
+
+blockquote p {
+  font-family: var(--body);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-hi);
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+}
+
+blockquote cite {
+  display: block;
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* ─── PHASE CARDS ─── */
+.phase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-top: 44px;
+}
+
+.phase-card {
+  background: var(--dark);
+  padding: 32px 28px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+
+.phase-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--glass-mid) 0%, transparent 50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.phase-card:hover { background: var(--dark3); }
+.phase-card:hover::after { opacity: 1; }
+
+.phase-num-bg {
+  position: absolute;
+  bottom: -10px; right: 10px;
+  font-family: var(--display);
+  font-size: 100px;
+  font-weight: 900;
+  color: var(--gold);
+  opacity: 0.06;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.phase-card h3 {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-hi);
+  margin-bottom: 14px;
+  line-height: 1.1;
+}
+
+.status-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  display: inline-block;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.status-badge::before, .status-badge::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+}
+
+.badge-complete { color: var(--gold-bright); background: rgba(200,150,10,0.15); border: 1px solid var(--gold-dim); }
+.badge-current  { color: #E8A020; background: rgba(232,160,32,0.12); border: 1px solid rgba(232,160,32,0.4); animation: blink 2s ease-in-out infinite; }
+.badge-begin    { color: var(--text-dim); background: rgba(200,150,10,0.05); border: 1px solid rgba(200,150,10,0.15); }
+
+.phase-card p { font-size: 14px; color: var(--text-dim); line-height: 1.7; font-weight: 400; }
+
+/* ─── STATS ─── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin: 44px 0;
+}
+
+.stat-block {
+  background: var(--dark2);
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-block::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.5;
+}
+
+.stat-num {
+  font-family: var(--display);
+  font-size: 52px;
+  font-weight: 900;
+  color: var(--gold-bright);
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(200,150,10,0.5);
+}
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 10px;
+}
+
+/* ─── STAGES ─── */
+.stages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.stage {
+  padding: 28px 24px;
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  transition: border-color 0.25s;
+}
+
+.stage:hover { border-color: var(--border-hi); }
+
+.stage::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold-bright), transparent);
+  opacity: 0.6;
+}
+
+.stage-num-bg {
+  position: absolute;
+  top: 8px; right: 12px;
+  font-family: var(--display);
+  font-size: 72px;
+  font-weight: 900;
+  color: var(--gold);
+  opacity: 0.07;
+  line-height: 1;
+}
+
+.stage h4 {
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold-bright);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stage-icon {
+  width: 6px; height: 6px;
+  background: var(--gold-bright);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.stage p { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+/* ─── COST TABLE ─── */
+.cost-wrap { overflow-x: auto; margin-top: 40px; }
+
+.cost-grid {
+  min-width: 620px;
+  border: 1px solid var(--border);
+  background: var(--border);
+  display: grid;
+  gap: 1px;
+}
+
+.cost-row {
+  display: grid;
+  grid-template-columns: 190px 1fr 1fr;
+  background: var(--dark);
+  transition: background 0.2s;
+}
+
+.cost-row:hover { background: var(--dark3); }
+
+.cost-row.header {
+  background: var(--dark3);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border-hi);
+}
+
+.cost-cell {
+  padding: 18px 22px;
+  font-size: 14px;
+  line-height: 1.65;
+  border-right: 1px solid var(--border);
+}
+
+.cost-cell:last-child { border-right: none; }
+
+.cost-row:not(.header) .cost-cell:first-child {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.cost-row:not(.header) .cost-cell:nth-child(2) { color: var(--text-dim); }
+
+.cost-row:not(.header) .cost-cell:nth-child(3) {
+  color: #C06010;
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* ─── CONTROL TABLE ─── */
+.table-wrap { overflow-x: auto; margin: 44px 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+
+thead { border-bottom: 1px solid var(--border-hi); }
+
+thead th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 14px 18px;
+  text-align: left;
+  background: var(--dark3);
+}
+
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.2s; }
+tbody tr:hover { background: var(--glass); }
+tbody td { padding: 18px; vertical-align: top; line-height: 1.65; }
+
+tbody td:first-child {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+tbody td:nth-child(2) { color: var(--text-dim); }
+tbody td:nth-child(3) { color: var(--text-hi); }
+
+/* ─── CLOCK BLOCK ─── */
+.clock-block {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  padding: 48px;
+  background: var(--glass);
+  border: 1px solid var(--border-hi);
+  margin: 44px 0;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 32px 100%, 0 calc(100% - 32px));
+}
+
+.clock-block::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(200,150,10,0.12) 0%, transparent 60%);
+}
+
+.clock-num {
+  font-family: var(--display);
+  font-size: 110px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--gold-bright);
+  text-shadow: 0 0 40px rgba(200,150,10,0.6), 0 0 80px rgba(200,150,10,0.2);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.clock-text h3 {
+  font-family: var(--display);
+  font-size: 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-hi);
+  margin-bottom: 14px;
+}
+
+.clock-text p { font-size: 15px; color: var(--text-dim); line-height: 1.8; max-width: 560px; }
+
+/* ─── NODE CONNECTOR ROW ─── */
+.node-connector {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 56px 0 20px;
+  padding: 0;
+}
+
+.nc-dot {
+  width: 10px; height: 10px;
+  background: var(--gold-bright);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.nc-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold-dim), var(--border));
+}
+
+.nc-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  padding: 0 12px;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 48px 40px;
+  text-align: center;
+  background: var(--dark2);
+  position: relative;
+}
+
+footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  opacity: 0.5;
+}
+
+footer p {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+footer p + p { margin-top: 8px; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  main section { padding: 60px 20px; }
+  .clock-block { flex-direction: column; gap: 24px; padding: 32px 28px; }
+  .clock-num { font-size: 80px; }
+  .hud-panel { padding: 28px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- FLOATING TRIANGLES -->
+<canvas id="tri-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">BOTE <span>// REPORT v2.4</span></span>
+  <ul class="nav-links">
+    <li><a href="#monitor">Surveillance</a></li>
+    <li><a href="#phases">Phases</a></li>
+    <li><a href="#civilian">Civilian</a></li>
+    <li><a href="#arms">Arms Race</a></li>
+    <li><a href="#clock">The Clock</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hud-corner tl"></div>
+  <div class="hud-corner tr"></div>
+  <div class="hud-corner bl"></div>
+  <div class="hud-corner br"></div>
+
+  <p class="hero-eyebrow">Algorithmic Authority // Classified Report</p>
+  <h1 class="hero-title">AI: The Unmaking<br>of the <span class="accent">Soul</span></h1>
+  <p class="hero-subtitle">It may not be the end of the world. But you can see it from here.</p>
+  <div class="hero-status">
+    <div class="status-dot"></div>
+    <p>System active — Phase 3.1 in progress — scroll to proceed</p>
+  </div>
+</div>
+
+<main>
+
+<!-- INVISIBLE WAR -->
+<div class="band" id="monitor">
+<section>
+  <p class="section-eyebrow">Prologue — Surveillance Report</p>
+  <h2 class="section-title">Invisible War:<br>The Monitored Life</h2>
+
+  <div class="section-body">
+    <p>You step out of your front door on a Tuesday morning. Your neighbor's smart doorbell timestamps your departure into a cloud log you will never see. Your car — even a reliable <span class="hl">2010 model</span> bought specifically to avoid connected privacy risks — houses an <span class="hl-gold">Event Data Recorder (EDR)</span> that silently logs your speed, braking patterns, and seatbelt status. No Wi-Fi required.</p>
+  </div>
+
+  <div class="hud-panel">
+    <span class="hud-panel-label">// threat vector alpha</span>
+    <h3>The Buildings Have Eyes</h3>
+    <p>Your drive to a local Chili's to meet a friend is a gauntlet of passive surveillance:</p>
+    <br/>
+    <ul>
+      <li><strong>The Neighborhood:</strong> Every house you pass features a doorbell camera, collectively mapping your vehicle's trajectory through the suburbs.</li>
+      <li><strong>The Intersection:</strong> Traffic cameras record your passage, their high-resolution lenses potentially noting the exact second you reached for your phone at a red light.</li>
+      <li><strong>The Arrival:</strong> You pull into the restaurant parking lot, where overhead security analytics begin monitoring your path from the car to the front door.</li>
+    </ul>
+  </div>
+
+  <div class="hud-panel">
+    <span class="hud-panel-label">// threat vector beta</span>
+    <h3>The "Data-Driven" Dining Experience</h3>
+    <p>You find your friend at a booth and order lunch. To you, it's just a meal; to the restaurant's backend system, it's a profile update. Your order is instantly tied to your credit card and phone number.</p>
+    <p>The system may already know you are a regular, perhaps even flagging your "sentiment score" based on past interactions with staff. Before the server even gets to you they are updated on any past interactions (whether positive or negative). Is the server suggesting the Southwest Eggrolls because of a genuine recommendation, or is the POS system prompting an "upsell" based on your historical preferences? You wouldn't know.</p>
+  </div>
+
+  <div class="hud-panel">
+    <span class="hud-panel-label">// threat vector gamma</span>
+    <h3>The Invisible Ear</h3>
+    <p>And as you lean in to share your life with your friend — your dreams, your frustrations, your fears — the person in the booth behind you is wearing a <span class="hl-red">"Bee."</span> A $50 wearable AI assistant designed to record, transcribe, and analyze every word spoken in its vicinity, 24 hours a day. Your private conversation is now digitized, analyzed by a large language model, and stored on a server halfway across the world.</p>
+  </div>
+
+  <blockquote>
+    <p>"In modern society, 'opting out' of technology no longer equates to 'opting out' of being monitored. We are moving from a world of scattered data to a world of consolidated intelligence."</p>
+    <cite>// core reality — threat assessment</cite>
+  </blockquote>
+</section>
+</div>
+
+<hr class="divider">
+
+<!-- PHASES -->
+<section id="phases">
+  <p class="section-eyebrow">Architecture of Control</p>
+  <h2 class="section-title">Four Phases.<br>Two Complete.</h2>
+
+  <div class="section-body">
+    <p>The transition from individual agency to algorithmic authority is not a single event. It is a deliberate sequence — each phase building on the last, each making the next inevitable. We are already deep inside this process.</p>
+  </div>
+
+  <div class="phase-grid">
+    <div class="phase-card">
+      <span class="phase-num-bg">1</span>
+      <h3>The Social Dilemma</h3>
+      <span class="status-badge badge-complete">■ Complete</span>
+      <p>We voluntarily tagged, sorted, and organized our lives for machine consumption. Algorithms replaced organic discovery. We gave up our data and accepted influenced feeds as a standard part of modern life.</p>
+    </div>
+    <div class="phase-card">
+      <span class="phase-num-bg">2</span>
+      <h3>AI Enters the Chat</h3>
+      <span class="status-badge badge-complete">■ Complete</span>
+      <p>November 20, 2022 — the capstone was placed. Decades of scattered data suddenly became comprehensible. The tools to aggregate, synthesize, and understand your entire life story are now fully operational.</p>
+    </div>
+    <div class="phase-card">
+      <span class="phase-num-bg">3</span>
+      <h3>Civilian Rollout</h3>
+      <span class="status-badge badge-current">◉ In Progress</span>
+      <p>The "Optimized Life" is being sold right now through convenience. Devices like the Bee are already circulating in public spaces. The rollout is not announced — it is offered.</p>
+    </div>
+    <div class="phase-card">
+      <span class="phase-num-bg">4</span>
+      <h3>The Arms Race</h3>
+      <span class="status-badge badge-begin">◌ Beginning</span>
+      <p>The AI super-soldier era and consolidation of power into the Elite Few via psychological warfare and systemic suppression are only just beginning to take shape.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PHASE 1 -->
+<div class="band">
+<section>
+  <p class="section-eyebrow">Phase 1</p>
+  <h2 class="section-title">The Social Dilemma</h2>
+
+  <div class="section-body">
+    <p>The social media era was the first major step in this evolution. It established a few critical concepts including:</p>
+  </div>
+
+  <div class="hud-panel">
+    <span class="hud-panel-label">// concept 01</span>
+    <h3>Voluntary Data Categorization</h3>
+    <p>We learned to "tag" our lives, essentially organizing the world's data for machine consumption.</p>
+  </div>
+
+  <div class="hud-panel">
+    <span class="hud-panel-label">// concept 02</span>
+    <h3>The Curated Reality</h3>
+    <p>We traded organic discovery for "feeds." Algorithms began to decide what information reached us, creating a subtle but powerful mechanism for large-scale behavioral influence.</p>
+  </div>
+</section>
+</div>
+
+<hr class="divider">
+
+<!-- PHASE 2 -->
+<style>
+/* ─── PHASE 2 CUSTOM ─── */
+.capstone-date {
+  text-align: center;
+  margin: 48px 0;
+  position: relative;
+}
+
+.capstone-date .date-display {
+  font-family: var(--display);
+  font-size: clamp(48px, 10vw, 120px);
+  font-weight: 900;
+  color: var(--gold-bright);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 40px rgba(200,150,10,0.5), 0 0 80px rgba(200,150,10,0.2);
+  animation: dateGlow 3s ease-in-out infinite;
+  position: relative;
+  display: inline-block;
+}
+
+.capstone-date .date-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+@keyframes dateGlow {
+  0%, 100% { text-shadow: 0 0 40px rgba(200,150,10,0.5), 0 0 80px rgba(200,150,10,0.2); }
+  50% { text-shadow: 0 0 60px rgba(200,150,10,0.8), 0 0 120px rgba(200,150,10,0.4), 0 0 200px rgba(200,150,10,0.15); }
+}
+
+/* era comparison */
+.era-compare {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  margin: 48px 0;
+  align-items: stretch;
+}
+
+.era-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  padding: 36px 32px;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+.era-card:hover {
+  background: var(--glass-mid);
+  border-color: var(--border-hi);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+
+.era-card.manual {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+  opacity: 0.6;
+}
+
+.era-card.manual:hover { opacity: 0.8; }
+
+.era-card.automated {
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  border-color: var(--gold);
+}
+
+.era-card.automated:hover {
+  box-shadow: 0 0 30px rgba(200,150,10,0.2), 0 12px 40px rgba(0,0,0,0.4);
+}
+
+.era-card .era-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.era-card h4 {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-hi);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.era-card p {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.era-card .era-stat {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.era-card .era-stat strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 28px;
+  color: var(--gold-bright);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.era-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  position: relative;
+}
+
+.era-divider::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  left: 50%;
+  background: linear-gradient(180deg, transparent, var(--gold-bright), transparent);
+}
+
+.era-divider .arrow {
+  background: var(--dark2);
+  border: 1px solid var(--gold);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--gold-bright);
+  z-index: 1;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  animation: arrowPulse 2s ease-in-out infinite;
+}
+
+@keyframes arrowPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* friction vanished callout */
+.friction-callout {
+  text-align: center;
+  padding: 40px;
+  margin: 48px 0;
+  position: relative;
+  background: linear-gradient(135deg, rgba(224,96,32,0.08) 0%, transparent 50%, rgba(200,150,10,0.08) 100%);
+  border: 1px solid rgba(224,96,32,0.3);
+}
+
+.friction-callout .strike {
+  font-family: var(--display);
+  font-size: clamp(18px, 3vw, 28px);
+  font-weight: 700;
+  color: var(--text-dim);
+  text-decoration: line-through;
+  text-decoration-color: #E06020;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.friction-callout .reveal {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(22px, 4vw, 40px);
+  font-weight: 900;
+  color: #E06020;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 8px;
+  text-shadow: 0 0 30px rgba(224,96,32,0.4);
+  animation: frictionGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes frictionGlow {
+  0%, 100% { text-shadow: 0 0 30px rgba(224,96,32,0.4); }
+  50% { text-shadow: 0 0 50px rgba(224,96,32,0.7), 0 0 100px rgba(224,96,32,0.2); }
+}
+
+/* illusion cards */
+.illusion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin: 44px 0;
+  counter-reset: illusion;
+}
+
+.illusion-card {
+  background: var(--dark);
+  padding: 36px 28px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s ease;
+  counter-increment: illusion;
+}
+
+.illusion-card::before {
+  content: counter(illusion, decimal-leading-zero);
+  position: absolute;
+  top: -8px; right: 12px;
+  font-family: var(--display);
+  font-size: 80px;
+  font-weight: 900;
+  color: var(--gold);
+  opacity: 0.05;
+  line-height: 1;
+  transition: opacity 0.35s;
+}
+
+.illusion-card:hover { background: var(--dark3); }
+.illusion-card:hover::before { opacity: 0.12; }
+
+.illusion-card h4 {
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+  padding-left: 14px;
+  border-left: 2px solid var(--gold-bright);
+}
+
+.illusion-card p {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+/* mirror section */
+.mirror-section {
+  position: relative;
+  padding: 48px 44px;
+  margin: 48px 0;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(200,150,10,0.1) 0%, transparent 70%),
+    var(--glass);
+  border: 1px solid var(--border);
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+}
+
+.mirror-section .mirror-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.mirror-section h3 {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-hi);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 20px;
+}
+
+.mirror-section p {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.mirror-section p + p { margin-top: 16px; }
+
+.mirror-section .mirror-highlight {
+  margin-top: 24px;
+  padding: 20px 24px;
+  background: rgba(200,150,10,0.06);
+  border-left: 2px solid var(--gold-bright);
+  font-size: 15px;
+  color: var(--text-hi);
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+/* fronts teaser */
+.fronts-teaser {
+  text-align: center;
+  margin: 48px 0 0;
+  padding: 36px;
+  border: 1px dashed var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.fronts-teaser::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(200,150,10,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.fronts-teaser p {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+.fronts-teaser .front-badges {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fronts-teaser .front-badge {
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  background: var(--glass);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  transition: all 0.3s ease;
+}
+
+.fronts-teaser .front-badge:hover {
+  background: var(--glass-mid);
+  border-color: var(--gold-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(200,150,10,0.2);
+}
+
+@media (max-width: 768px) {
+  .era-compare { grid-template-columns: 1fr; }
+  .era-divider {
+    width: 100%;
+    height: 40px;
+    flex-direction: row;
+  }
+  .era-divider::before {
+    top: 50%; bottom: auto;
+    width: 100%; height: 1px;
+    left: 0;
+    background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  }
+}
+</style>
+
+<div class="band">
+<section>
+  <p class="section-eyebrow">Phase 02 — AI Entered the Chat</p>
+  <h2 class="section-title">From Data Collection<br>to Data <span style="color:var(--gold-bright)">Understanding</span></h2>
+
+  <div class="capstone-date">
+    <span class="date-display">NOV 20, 2022</span>
+    <span class="date-label">The day the capstone was placed</span>
+  </div>
+
+  <div class="section-body">
+    <p>On November 20, 2022, the digital landscape shifted permanently with the release of ChatGPT. While it may have seemed like a clever chatbot, it represented something far more consequential: the arrival of what I call the <span class="hl-gold">"capstone."</span></p>
+    <p>For decades, we have been living in an era of massive data collection. Every credit card swipe, every GPS coordinate, and every social media "like" was a puzzle piece being tossed into a giant pile. Until recently, that pile was largely a disorganized mess.</p>
+  </div>
+
+  <!-- Era Comparison -->
+  <div class="era-compare">
+    <div class="era-card manual">
+      <span class="era-tag">// before</span>
+      <h4>The "Manual" Era</h4>
+      <p>Connecting the dots was a human-intensive process. If an organization wanted to build a profile on you, they needed teams of analysts, specialized software, and a significant amount of time to manually "thread" your data together.</p>
+      <p style="margin-top:12px">Because the data was scattered across different "silos" — your bank, your phone provider, your local grocery store — it was difficult to see the full picture of your life.</p>
+      <div class="era-stat">
+        <strong>Weeks</strong>
+        // Time to build one profile
+      </div>
+    </div>
+    <div class="era-divider">
+      <span class="arrow">→</span>
+    </div>
+    <div class="era-card automated">
+      <span class="era-tag">// after</span>
+      <h4>The "Automated" Era</h4>
+      <p>Today's AI doesn't just store information; it <span class="hl">understands</span> it. It can ingest millions of disparate data points and instantly draw conclusions that once took human experts weeks to find.</p>
+      <p style="margin-top:12px">No teams. No time. No friction. A single query can now weave together every thread of your digital existence into a living, breathing portrait.</p>
+      <div class="era-stat">
+        <strong>Seconds</strong>
+        // Time to build one profile
+      </div>
+    </div>
+  </div>
+
+  <!-- Friction callout -->
+  <div class="friction-callout">
+    <span class="strike">Our privacy was protected by friction</span>
+    <span class="reveal">That friction has vanished.</span>
+  </div>
+
+  <!-- The Illusion of Separate Data -->
+  <div class="section-body">
+    <p style="margin-bottom:8px">You might feel secure knowing that your neighbor's doorbell camera, your car's internal computer, and your favorite restaurant's loyalty program are all owned by different companies. However, in a connected world, <span class="hl-red">"separate" is an illusion.</span></p>
+  </div>
+
+  <div class="illusion-grid">
+    <div class="illusion-card">
+      <h4>The Digital Thread</h4>
+      <p>Almost all this data is stored in the cloud. It exists on servers that are only as secure as their weakest link. Not only that but it's being consolidated to fewer and fewer data centers. If the CIA has access to Amazon's data centers, your "separated" data is all there.</p>
+    </div>
+    <div class="illusion-card">
+      <h4>The Breach Reality</h4>
+      <p>Whether through malicious hackers or state-level intelligence agencies, data is constantly being leaked, sold, or "scraped." And it can never be hidden again.</p>
+    </div>
+    <div class="illusion-card">
+      <h4>The Permanent Record</h4>
+      <p>Unlike a physical conversation that fades, digital data is forever. Once your personal information is out there, it is impossible to "un-leak" it.</p>
+    </div>
+  </div>
+
+  <!-- The Mirror -->
+  <div class="mirror-section">
+    <span class="mirror-tag">// predictive synthesis</span>
+    <h3>The Mirror That Knows You Better Than You Do</h3>
+    <p>We have moved past the point where companies just want to sell you a pair of shoes. With modern synthesis, entities can build a profile so accurate it can predict your life choices before you even make them. By analyzing your patterns, stressors, and preferences, algorithms can begin to "nudge" your decisions — subtly influencing who you vote for, what you fear, and how you spend your time.</p>
+    <div class="mirror-highlight">
+      While this technology is being marketed to us through the lens of <span class="hl-gold">comfort, convenience, and safety</span>, we must recognize the trade-off. We are trading the messy, unpredictable nature of human intuition for the cold, calculated authority of the algorithm. The "shift" isn't coming in the future — it is happening in the palm of your hand right now.
+    </div>
+  </div>
+
+  <!-- Fronts Teaser -->
+  <div class="fronts-teaser">
+    <p>// Incoming transmission — 3 active fronts identified</p>
+    <div class="front-badges">
+      <span class="front-badge">Front 01: Civilian</span>
+      <span class="front-badge">Front 02: Military</span>
+      <span class="front-badge">Front 03: Psychological</span>
+    </div>
+  </div>
+
+</section>
+</div>
+
+<hr class="divider">
+
+<!-- CIVILIAN FRONT -->
+<section id="civilian">
+  <p class="section-eyebrow">Phase 3.1 — The Civilian Front</p>
+  <h2 class="section-title">The "Optimized" Life</h2>
+
+  <div class="section-body">
+    <p>A frog in a pot does not jump out if the heat rises slowly enough. We are introduced to these intrusions not through force, but through <span class="hl-gold">convenience.</span> Each technology listed below exists right now. Companies are racing to deploy it. We will see most of this take widespread shape within the next few years.</p>
+  </div>
+
+  <div class="cost-wrap">
+    <div class="cost-grid">
+      <div class="cost-row header">
+        <div class="cost-cell">// Feature</div>
+        <div class="cost-cell">// Convenience (The Hook)</div>
+        <div class="cost-cell">// Cost (The Soul's Tax)</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-cell">Social RT Coaching</div>
+        <div class="cost-cell">Your AI whispers exactly what to say to de-escalate a fight or charm a date.</div>
+        <div class="cost-cell">The Death of Authenticity. Relationships become transactions between two competing AI assistants.</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-cell">Generative Problem Solving</div>
+        <div class="cost-cell">Why learn to code, paint, or write when a prompt delivers a perfect result?</div>
+        <div class="cost-cell">The Erosion of Competence. Remove the struggle, and the pride of achievement vanishes with it.</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-cell">Gamified Reality</div>
+        <div class="cost-cell">Your glasses turn a boring commute into a high-fantasy quest with rewards and loot.</div>
+        <div class="cost-cell">The Loss of the Sublime. You stop seeing the sunset for what it is. Meaning in the mundane disappears.</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-cell">Predictive Moral Agency</div>
+        <div class="cost-cell">An AI Ethics Assistant nudges you toward the most sustainable and kind choice.</div>
+        <div class="cost-cell">The Abdication of Conscience. If a machine makes your moral choices, are you still a good person?</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-cell">Augmented Memory</div>
+        <div class="cost-cell">You never forget a face, a birthday, or a detail. Everything indexed and searchable.</div>
+        <div class="cost-cell">The Burden of the Past. In a world of perfect digital memory, no mistake is ever truly gone.</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-cell">Biometric Tracking</div>
+        <div class="cost-cell">AI monitors your heart rate and stress levels to keep you healthy.</div>
+        <div class="cost-cell">Your insurance company knows you are stressed before you do — and raises your rates accordingly.</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-cell">Always-On Audio</div>
+        <div class="cost-cell">Your glasses translate any language in real time, anywhere in the world.</div>
+        <div class="cost-cell">Every private conversation you have is indexed and searchable by the service provider.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LUKEWARM WATER STRATEGY -->
+  <style>
+  /* ─── LUKEWARM SECTION ─── */
+  .lukewarm-intro {
+    position: relative;
+    padding: 48px 44px;
+    margin: 48px 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(224,96,32,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 50%, rgba(200,150,10,0.06) 0%, transparent 60%),
+      var(--glass);
+    border: 1px solid var(--border);
+    clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+  }
+
+  .lukewarm-intro .lw-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #E06020;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .lukewarm-intro h3 {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-hi);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 24px;
+  }
+
+  .lukewarm-intro p {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .lukewarm-intro p + p { margin-top: 16px; }
+
+  .lukewarm-intro em {
+    color: var(--text-hi);
+    font-style: italic;
+  }
+
+  /* temperature gauge */
+  .temp-gauge {
+    margin: 48px 0;
+    position: relative;
+    height: 60px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    border-radius: 2px;
+  }
+
+  .temp-gauge .temp-fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(200,150,10,0.15), rgba(224,96,32,0.3), rgba(200,40,20,0.5));
+    animation: tempRise 4s ease-out forwards;
+  }
+
+  .temp-gauge .temp-labels {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    z-index: 1;
+  }
+
+  .temp-gauge .temp-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    transition: color 1s ease;
+  }
+
+  .temp-gauge .temp-label.hot {
+    color: #E06020;
+    font-weight: 700;
+  }
+
+  .temp-gauge .temp-marker {
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold-bright);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    animation: markerPulse 2s ease-in-out infinite;
+    animation-delay: 4s;
+  }
+
+  @keyframes tempRise {
+    0% { width: 0%; }
+    100% { width: 72%; }
+  }
+
+  @keyframes markerPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* joke card */
+  .joke-card {
+    margin: 48px auto;
+    max-width: 640px;
+    position: relative;
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .joke-card .joke-header {
+    padding: 16px 24px;
+    background: var(--glass-mid);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .joke-card .joke-body {
+    padding: 28px 32px;
+  }
+
+  .joke-card .joke-then,
+  .joke-card .joke-now {
+    padding: 16px 0;
+  }
+
+  .joke-card .joke-then {
+    border-bottom: 1px dashed var(--border);
+    opacity: 0.6;
+  }
+
+  .joke-card .joke-label {
+    font-family: var(--display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .joke-card .joke-then .joke-label { color: var(--text-dim); }
+  .joke-card .joke-now .joke-label { color: #E06020; }
+
+  .joke-card .joke-rule {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+    margin: 6px 0;
+  }
+
+  .joke-card .joke-then .joke-rule {
+    text-decoration: line-through;
+    text-decoration-color: rgba(224,96,32,0.4);
+    color: var(--text-dim);
+  }
+
+  .joke-card .joke-now .joke-rule {
+    border-left-color: #E06020;
+    color: var(--text-hi);
+  }
+
+  /* nudge callout */
+  .nudge-callout {
+    text-align: center;
+    padding: 32px 40px;
+    margin: 40px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nudge-callout p {
+    font-family: var(--body);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-hi);
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+  }
+
+  .nudge-callout .nudge-em {
+    display: block;
+    margin-top: 12px;
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #E06020;
+  }
+
+  /* bee section */
+  .bee-section {
+    position: relative;
+    margin: 48px 0;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .bee-header {
+    padding: 24px 32px;
+    background: linear-gradient(135deg, rgba(224,96,32,0.12) 0%, rgba(200,150,10,0.06) 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .bee-header .bee-icon {
+    width: 48px;
+    height: 48px;
+    border: 2px solid #E06020;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: rgba(224,96,32,0.1);
+    animation: beeHex 3s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes beeHex {
+    0%, 100% { border-color: #E06020; box-shadow: 0 0 10px rgba(224,96,32,0.2); }
+    50% { border-color: var(--gold-bright); box-shadow: 0 0 20px rgba(224,96,32,0.4); }
+  }
+
+  .bee-header .bee-title-wrap h3 {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-hi);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .bee-header .bee-title-wrap span {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #E06020;
+  }
+
+  .bee-body {
+    padding: 36px 32px;
+    background: var(--glass);
+  }
+
+  .bee-body p {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .bee-body p + p { margin-top: 16px; }
+
+  .bee-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .bee-spec {
+    background: var(--dark);
+    padding: 20px;
+    text-align: center;
+    transition: background 0.3s;
+  }
+
+  .bee-spec:hover { background: var(--dark3); }
+
+  .bee-spec .spec-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .bee-spec .spec-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .bee-spec .spec-value {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-hi);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .bee-warning {
+    margin: 24px 0 0;
+    padding: 20px 24px;
+    background: rgba(224,96,32,0.08);
+    border: 1px solid rgba(224,96,32,0.3);
+    text-align: center;
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+    color: #E06020;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.6;
+    animation: warningFlash 3s ease-in-out infinite;
+  }
+
+  @keyframes warningFlash {
+    0%, 100% { border-color: rgba(224,96,32,0.3); background: rgba(224,96,32,0.08); }
+    50% { border-color: rgba(224,96,32,0.6); background: rgba(224,96,32,0.12); }
+  }
+  </style>
+
+  <!-- Lukewarm intro -->
+  <div class="lukewarm-intro">
+    <span class="lw-tag">// behavioral conditioning protocol</span>
+    <h3>The "Lukewarm Water" Strategy</h3>
+    <p>It is natural to think, <em>"People would never allow such a massive intrusion of privacy!"</em> On the surface, you are right. If a government mandated that every citizen wear a live microphone today, there would be an uproar.</p>
+    <p>However, history shows us that privacy isn't usually taken; it is <span class="hl">traded.</span> Think back to the early days of smartphones — carrying a GPS tracker that recorded your location 24/7 was once seen as a radical "social faux pas." Today, we feel anxious if we leave home without one.</p>
+  </div>
+
+  <!-- Temperature gauge -->
+  <div class="temp-gauge">
+    <div class="temp-fill"></div>
+    <div class="temp-labels">
+      <span class="temp-label">Comfortable</span>
+      <span class="temp-marker">← You are here</span>
+      <span class="temp-label hot">Boiling</span>
+    </div>
+  </div>
+
+  <!-- The Joke -->
+  <div class="joke-card">
+    <div class="joke-header">// a classic observation — circa 2024</div>
+    <div class="joke-body">
+      <div class="joke-then">
+        <div class="joke-label">When we grew up, we were taught:</div>
+        <p class="joke-rule">Never get into a car with a stranger.</p>
+        <p class="joke-rule">Never meet someone from the internet.</p>
+        <p class="joke-rule">Never tell anyone your location.</p>
+      </div>
+      <div class="joke-now">
+        <div class="joke-label">Now we literally:</div>
+        <p class="joke-rule">Use an app to summon a stranger from the internet,</p>
+        <p class="joke-rule">Get into their car,</p>
+        <p class="joke-rule">And let them track our location in real time.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nudge callout -->
+  <div class="nudge-callout">
+    <p>The shift doesn't happen with a leap; it happens with a nudge.</p>
+    <span class="nudge-em">To "boil the frog," the water must start lukewarm.</span>
+  </div>
+
+  <!-- The Bee -->
+  <div class="bee-section">
+    <div class="bee-header">
+      <div class="bee-icon">🐝</div>
+      <div class="bee-title-wrap">
+        <span>// case study — active surveillance device</span>
+        <h3>The Case of the "Bee"</h3>
+      </div>
+    </div>
+    <div class="bee-body">
+      <p>Consider the device mentioned in our story: the <span class="hl-red">"Bee."</span> To 99% of the population, this looks like nothing more than a standard fitness tracker or a sleek bracelet. It is flying completely under the academic and social radar.</p>
+
+      <div class="bee-specs">
+        <div class="bee-spec">
+          <span class="spec-icon">📷</span>
+          <span class="spec-label">Camera</span>
+          <span class="spec-value">None</span>
+        </div>
+        <div class="bee-spec">
+          <span class="spec-icon">🎙️</span>
+          <span class="spec-label">Microphone</span>
+          <span class="spec-value">Always On</span>
+        </div>
+        <div class="bee-spec">
+          <span class="spec-icon">🧠</span>
+          <span class="spec-label">AI Analysis</span>
+          <span class="spec-value">Real-Time</span>
+        </div>
+        <div class="bee-spec">
+          <span class="spec-icon">👥</span>
+          <span class="spec-label">Speaker ID</span>
+          <span class="spec-value">Multi-Voice</span>
+        </div>
+      </div>
+
+      <p>While it lacks a camera, it has incredibly sensitive "ears." It records every sound in its vicinity — transcribing conversations, analyzing emotional tones, and building a psychological profile. While its stated purpose is to "help" the wearer navigate their day, the technology doesn't stop at the wearer's voice. It can differentiate between speakers, capturing the dreams, fears, and private details of everyone in the room.</p>
+
+      <div class="bee-warning">
+        ⚠ This isn't a future prediction. This technology exists and is being worn in public spaces today. ⚠
+      </div>
+    </div>
+  </div>
+
+  <div class="node-connector">
+    <div class="nc-dot"></div>
+    <div class="nc-line"></div>
+    <span class="nc-label">Path to mass adoption</span>
+    <div class="nc-line"></div>
+    <div class="nc-dot"></div>
+  </div>
+
+  <div class="stages">
+    <div class="stage">
+      <span class="stage-num-bg">1</span>
+      <h4><span class="stage-icon"></span>The Productivity Hook</h4>
+      <p>It starts in the office. Businesses realize that employees using Smart Tech are measurably more efficient. They begin encouraging its use to stay competitive. Already visible in AI email and workflow integration.</p>
+    </div>
+    <div class="stage">
+      <span class="stage-num-bg">2</span>
+      <h4><span class="stage-icon"></span>The Safety Shield</h4>
+      <p>The narrative shifts to protection. An AI assistant that can detect a physical danger or digital scam seconds before it happens. Who would refuse a guardian angel on their shoulder?</p>
+    </div>
+    <div class="stage">
+      <span class="stage-num-bg">3</span>
+      <h4><span class="stage-icon"></span>The Competency Gap</h4>
+      <p>The Augmented individual severely outpaces the Natural individual. Those who refused find themselves unable to compete in the job market or in daily tasks. The water is no longer lukewarm.</p>
+    </div>
+  </div>
+
+  <blockquote>
+    <p>If we as an American society don't accept it, then China will outpace us. Which brings me to my next point...</p>
+    <cite>// the geopolitical lever</cite>
+  </blockquote>
+</section>
+
+<hr class="divider">
+
+<!-- ARMS RACE -->
+<div class="band" id="arms">
+<section>
+  <p class="section-eyebrow">Phase 3.2 — Military Integration</p>
+  <h2 class="section-title">AI and the<br>Arms Race</h2>
+
+  <div class="section-body">
+    <p>On the battlefield, the AI arms race moves through three distinct stages of human-machine integration — each one a step further from human agency, and a step closer to the machine as the de facto decision-maker.</p>
+  </div>
+
+  <div class="stages">
+    <div class="stage">
+      <span class="stage-num-bg">1</span>
+      <h4><span class="stage-icon"></span>The Informant</h4>
+      <p>The AI provides data — "Enemy at 2 o'clock." The human makes every decision. The soldier remains fully in command of both perception and action.</p>
+    </div>
+    <div class="stage">
+      <span class="stage-num-bg">2</span>
+      <h4><span class="stage-icon"></span>The Filter</h4>
+      <p>The battlefield becomes too fast for human processing. The AI begins to filter reality, showing only what it deems relevant. If compromised or biased, the soldier's entire perception is manipulated.</p>
+    </div>
+    <div class="stage">
+      <span class="stage-num-bg">3</span>
+      <h4><span class="stage-icon"></span>The Pilot</h4>
+      <p>The AI suggests optimal movements and fire patterns. The soldier becomes a platform for the AI's tactical execution — a passenger in their own skin, guided by augmentations in their weapons and gear.</p>
+    </div>
+  </div>
+
+</section>
+</div>
+
+<hr class="divider">
+
+<!-- PHASE 3.3: GOVERNMENT EDITION -->
+<style>
+/* ─── PHASE 3.3 CUSTOM ─── */
+.acton-quote {
+  text-align: center;
+  margin: 0 0 48px;
+  padding: 40px;
+  position: relative;
+}
+
+.acton-quote .acton-text {
+  font-family: Georgia, serif;
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-hi);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 40px rgba(224,96,32,0.2);
+}
+
+.acton-quote .acton-text .acton-em {
+  color: #E06020;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.acton-quote .acton-attr {
+  display: block;
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* friction diagram */
+.friction-diagram {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  margin: 48px 0;
+  align-items: stretch;
+}
+
+.friction-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  padding: 32px 28px;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+.friction-card:hover {
+  background: var(--glass-mid);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.friction-card .fc-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.friction-card.old-way .fc-tag { color: var(--text-dim); }
+.friction-card.new-way .fc-tag { color: #E06020; }
+
+.friction-card h4 {
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-hi);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.friction-card p {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.friction-card .people-count {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.friction-card .people-count strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.friction-card.old-way .people-count strong { color: var(--gold-bright); }
+.friction-card.new-way .people-count strong { color: #E06020; }
+
+.friction-card .people-count span {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.friction-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  position: relative;
+}
+
+.friction-arrow::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  left: 50%;
+  background: linear-gradient(180deg, transparent, #E06020, transparent);
+}
+
+.friction-arrow .fa-icon {
+  background: var(--dark2);
+  border: 1px solid #E06020;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #E06020;
+  z-index: 1;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  animation: arrowPulse 2s ease-in-out infinite;
+}
+
+/* snowden callout */
+.snowden-callout {
+  margin: 48px 0;
+  padding: 28px 36px;
+  background: rgba(200,150,10,0.05);
+  border-left: 3px solid var(--gold-bright);
+  position: relative;
+}
+
+.snowden-callout p {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.snowden-callout .snowden-name {
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+
+/* elite few reveal */
+.elite-reveal {
+  text-align: center;
+  padding: 48px 32px;
+  margin: 48px 0;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(224,96,32,0.1) 0%, transparent 60%);
+  border: 1px solid rgba(224,96,32,0.2);
+}
+
+.elite-reveal .elite-lead {
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.7;
+  max-width: 700px;
+  margin: 0 auto 20px;
+}
+
+.elite-reveal .elite-title {
+  font-family: var(--display);
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 900;
+  color: #E06020;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 40px rgba(224,96,32,0.4), 0 0 80px rgba(224,96,32,0.15);
+  animation: eliteGlow 3s ease-in-out infinite;
+}
+
+@keyframes eliteGlow {
+  0%, 100% { text-shadow: 0 0 40px rgba(224,96,32,0.4), 0 0 80px rgba(224,96,32,0.15); }
+  50% { text-shadow: 0 0 60px rgba(224,96,32,0.7), 0 0 120px rgba(224,96,32,0.3), 0 0 200px rgba(224,96,32,0.1); }
+}
+
+/* scenario terminal */
+.scenario-terminal {
+  margin: 48px 0;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--dark);
+}
+
+.scenario-terminal .term-header {
+  padding: 12px 20px;
+  background: rgba(224,96,32,0.1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scenario-terminal .term-header .term-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.scenario-terminal .term-header .term-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.scenario-terminal .term-header .term-dot:first-child { background: #E06020; }
+.scenario-terminal .term-header .term-dot:nth-child(2) { background: var(--gold); }
+
+.scenario-terminal .term-header .term-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.scenario-terminal .term-body {
+  padding: 28px 24px;
+}
+
+.scenario-terminal .term-section {
+  margin-bottom: 28px;
+}
+
+.scenario-terminal .term-section:last-child { margin-bottom: 0; }
+
+.scenario-terminal .term-prompt {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #E06020;
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+}
+
+.scenario-terminal .term-prompt::before {
+  content: '> ';
+  color: var(--gold);
+}
+
+.scenario-terminal .term-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: termitem;
+}
+
+.scenario-terminal .term-list li {
+  counter-increment: termitem;
+  padding: 8px 0 8px 32px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.6;
+  position: relative;
+  border-bottom: 1px solid rgba(200,150,10,0.06);
+  transition: all 0.2s;
+}
+
+.scenario-terminal .term-list li:hover {
+  background: rgba(200,150,10,0.04);
+  padding-left: 36px;
+}
+
+.scenario-terminal .term-list li::before {
+  content: counter(termitem, decimal-leading-zero) '.';
+  position: absolute;
+  left: 0;
+  font-family: var(--display);
+  font-size: 11px;
+  color: var(--gold-dim);
+  font-weight: 700;
+}
+
+.scenario-terminal .term-list.malicious li::before { color: #E06020; }
+
+.scenario-terminal .term-list.malicious li {
+  color: var(--text-hi);
+}
+
+.scenario-terminal .term-list.malicious li:hover {
+  background: rgba(224,96,32,0.06);
+}
+
+.scenario-terminal .term-ellipsis {
+  padding: 12px 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* database update callout */
+.db-update {
+  margin: 48px 0;
+  padding: 36px 40px;
+  position: relative;
+  background: var(--glass);
+  border: 1px solid rgba(224,96,32,0.3);
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+}
+
+.db-update p {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.db-update p + p { margin-top: 16px; }
+
+.db-update .db-highlight {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 20px;
+  background: rgba(224,96,32,0.1);
+  border: 1px solid rgba(224,96,32,0.4);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #E06020;
+  letter-spacing: 0.1em;
+}
+
+.db-update .db-footnote {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* control methods table (enhanced) */
+.control-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 48px 0;
+  font-size: 14px;
+}
+
+.control-table thead th {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 2px solid var(--border-hi);
+  background: var(--glass);
+}
+
+.control-table tbody td {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  transition: all 0.3s;
+}
+
+.control-table tbody tr {
+  transition: all 0.3s;
+}
+
+.control-table tbody tr:hover {
+  background: var(--glass);
+}
+
+.control-table tbody tr:hover td:last-child {
+  color: #E06020;
+}
+
+.control-table td:first-child {
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  width: 140px;
+  position: relative;
+  padding-left: 28px;
+}
+
+.control-table td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20px;
+  width: 3px;
+  height: 16px;
+  background: var(--gold-bright);
+}
+
+.control-table td:nth-child(2) {
+  color: var(--text-dim);
+  text-decoration: line-through;
+  text-decoration-color: rgba(200,150,10,0.3);
+}
+
+.control-table td:last-child {
+  color: var(--text-hi);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .friction-diagram { grid-template-columns: 1fr; }
+  .friction-arrow {
+    width: 100%;
+    height: 40px;
+  }
+  .friction-arrow::before {
+    top: 50%; bottom: auto;
+    width: 100%; height: 1px;
+    left: 0;
+    background: linear-gradient(90deg, transparent, #E06020, transparent);
+  }
+  .control-table { font-size: 12px; }
+  .control-table td:first-child { width: auto; }
+}
+</style>
+
+<section id="gov-control">
+  <p class="section-eyebrow">Phase 3.3 — Government Edition</p>
+  <h2 class="section-title">AI and the Arms Race</h2>
+
+  <div class="acton-quote">
+    <span class="acton-text">"<span class="acton-em">Absolute power</span> corrupts <span class="acton-em">absolutely.</span>"</span>
+    <span class="acton-attr">— Lord Acton, 1887</span>
+  </div>
+
+  <!-- Historical friction -->
+  <div class="section-body">
+    <p>Historically, massive propaganda campaigns or systemic corruption required a vast network of people — a "conspiracy" of hundreds of individuals willing to be loyal whether by fear or love. This human element acted as a <span class="hl">natural friction against tyranny.</span> If a leader wanted to illegally surveil or influence a citizen, they needed a team to gather the files, a team to analyze them, and a team to execute the plan.</p>
+  </div>
+
+  <div class="snowden-callout">
+    <p>The more people involved, the higher the risk of exposure. It only takes one person with a conscience — an <span class="snowden-name">Edward Snowden</span> figure — to pull back the curtain and rock the world with a revelation. This is the same logic behind our government's <span class="hl">"Checks and Balances"</span>: the system is designed to be slow and transparent specifically to mitigate the concentration of power.</p>
+  </div>
+
+  <!-- Friction diagram -->
+  <div class="friction-diagram">
+    <div class="friction-card old-way">
+      <span class="fc-tag">// the old model</span>
+      <h4>Human Conspiracy</h4>
+      <p>Surveillance required teams to gather files, teams to analyze them, and teams to execute the plan. Each link in the chain was a potential whistleblower.</p>
+      <div class="people-count">
+        <strong>100s</strong>
+        <span>// People required</span>
+      </div>
+    </div>
+    <div class="friction-arrow">
+      <span class="fa-icon">→</span>
+    </div>
+    <div class="friction-card new-way">
+      <span class="fc-tag">// the new model</span>
+      <h4>Algorithmic Authority</h4>
+      <p>AI consolidates the entire operation — collection, analysis, and execution — into a single system controlled by a handful of individuals. No chain. No whistleblower.</p>
+      <div class="people-count">
+        <strong>&lt;5</strong>
+        <span>// People required</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Elite Few reveal -->
+  <div class="elite-reveal">
+    <p class="elite-lead">AI cuts the number of people needed to be involved in a nefarious plot significantly. It consolidates more power into a smaller group of people in power...</p>
+    <span class="elite-title">The Elite Few.</span>
+  </div>
+
+  <!-- Scenario terminal -->
+  <div class="scenario-terminal">
+    <div class="term-header">
+      <div class="term-dots">
+        <span class="term-dot"></span>
+        <span class="term-dot"></span>
+        <span class="term-dot"></span>
+      </div>
+      <span class="term-title">Scenario: ...And knowing is half the battle!</span>
+    </div>
+    <div class="term-body">
+      <div class="term-section">
+        <div class="term-prompt">LOOKUP_CITIZEN — Full profile retrieved. Displaying:</div>
+        <ol class="term-list">
+          <li>Life story (including intimate details)</li>
+          <li>Medical information</li>
+          <li>Family information and history</li>
+          <li>Goals, dreams, fears, failures</li>
+          <li>Current location and daily movements</li>
+          <li>Political stance</li>
+        </ol>
+      </div>
+      <div class="term-section">
+        <div class="term-prompt">Now you have the ability to ask AI:</div>
+        <ol class="term-list malicious">
+          <li>What would it take to shame this individual into quitting their job?</li>
+          <li>Based on what you know of their significant other, what might cause them to divorce?</li>
+          <li>How can I ruin their reputation?</li>
+          <li>What steps might be taken to drive this person into depression?</li>
+        </ol>
+        <p class="term-ellipsis">You get the point. Psychological warfare to the n-th degree.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Database update -->
+  <div class="db-update">
+    <p>But it doesn't stop there. People in power now have tools to make these things happen. When everything is digital, "disappearing" someone doesn't require a whole department, special team and unmarked van.</p>
+    <p>It just takes a:</p>
+    <span class="db-highlight">$ UPDATE citizens SET status = 'removed' WHERE threat_level > 7;</span>
+    <span class="db-footnote">And there's no checks and balances to stop it...</span>
+  </div>
+
+  <!-- Control methods table -->
+  <div class="table-wrap">
+    <table class="control-table">
+      <thead>
+        <tr>
+          <th>// Method of Control</th>
+          <th>// The "Old Way" (Human)</th>
+          <th>// The "AI Way" (Systemic)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Suppression</td>
+          <td>Police arrest you for a protest.</td>
+          <td>Your digital wallet is "frozen" the moment your AI glasses detect you at restricted coordinates.</td>
+        </tr>
+        <tr>
+          <td>Isolation</td>
+          <td>You are blacklisted from certain jobs.</td>
+          <td>An AI HR-filter automatically discards your resume across 90% of the market because your "social credit" or "risk score" is too high.</td>
+        </tr>
+        <tr>
+          <td>Erasure</td>
+          <td>Burning books or deleting records.</td>
+          <td>AI-generated "deepfake" evidence is planted in your digital history, making your defense impossible because the "data" says you're guilty. Even if the false evidence is later discovered, your reputation could be ruined.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<hr class="divider">
+
+<!-- CLOCK -->
+<section id="clock">
+  <p class="section-eyebrow">Prognosis — Timeline Analysis</p>
+  <h2 class="section-title">The Free Society<br>Clock</h2>
+
+  <div class="clock-block">
+    <div class="hud-corner tl"></div>
+    <div class="hud-corner tr"></div>
+    <div class="hud-corner bl"></div>
+    <div class="hud-corner br"></div>
+    <div class="clock-num">&lt;50</div>
+    <div class="clock-text">
+      <h3>Years Remaining</h3>
+      <p>At our current trajectory, we may have less than 50 years before the concept of a "free society" is fundamentally altered. This does not mean a singular flag flying over every nation. It means the rise of Systemic Global Governance — where the Elite Few manage the world through a shared, invisible backend of data brokers and AI infrastructure. National sovereignty becomes a formality.</p>
+    </div>
+  </div>
+
+  <div class="section-body">
+    <p>We are trading the messy, unpredictable nature of human intuition for the cold, calculated authority of the algorithm. The shift is not coming in the future. It is happening in the palm of your hand right now — and the water, for most people, is still feeling comfortably warm.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>BOTE // Beginning of the End — Algorithmic Authority Report</p>
+  <p>Classification: Open Distribution // Version 2.4 // 2025</p>
+</footer>
+
+<script>
+// Floating Deus Ex triangles
+const canvas = document.getElementById('tri-canvas');
+const ctx = canvas.getContext('2d');
+
+let W, H, tris = [];
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+resize();
+window.addEventListener('resize', resize);
+
+const GOLD = 'rgba(200,150,10,';
+const GOLD2 = 'rgba(240,180,40,';
+
+function mkTri() {
+  const size = 10 + Math.random() * 40;
+  const bright = Math.random() > 0.7;
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.35,
+    vy: -0.15 - Math.random() * 0.5,
+    rot: Math.random() * Math.PI * 2,
+    vrot: (Math.random() - 0.5) * 0.008,
+    size,
+    alpha: 0.05 + Math.random() * (bright ? 0.45 : 0.18),
+    bright,
+    filled: Math.random() > 0.5,
+    flip: Math.random() > 0.5 ? 1 : -1,
+  };
+}
+
+for (let i = 0; i < 55; i++) tris.push(mkTri());
+
+function drawTri(t) {
+  ctx.save();
+  ctx.translate(t.x, t.y);
+  ctx.rotate(t.rot);
+  const s = t.size;
+  ctx.beginPath();
+  ctx.moveTo(0, -s * t.flip);
+  ctx.lineTo( s * 0.866, s * 0.5 * t.flip);
+  ctx.lineTo(-s * 0.866, s * 0.5 * t.flip);
+  ctx.closePath();
+
+  const col = t.bright ? GOLD2 : GOLD;
+  if (t.filled) {
+    ctx.fillStyle = col + (t.alpha * 0.4) + ')';
+    ctx.fill();
+  }
+  ctx.strokeStyle = col + t.alpha + ')';
+  ctx.lineWidth = t.bright ? 1.5 : 0.8;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function frame() {
+  ctx.clearRect(0, 0, W, H);
+
+  // draw subtle node-connection lines between nearby tris
+  for (let i = 0; i < tris.length; i++) {
+    for (let j = i + 1; j < tris.length; j++) {
+      const dx = tris[i].x - tris[j].x;
+      const dy = tris[i].y - tris[j].y;
+      const d  = Math.sqrt(dx*dx + dy*dy);
+      if (d < 140) {
+        ctx.beginPath();
+        ctx.moveTo(tris[i].x, tris[i].y);
+        ctx.lineTo(tris[j].x, tris[j].y);
+        ctx.strokeStyle = GOLD + (0.07 * (1 - d/140)) + ')';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  tris.forEach(t => {
+    drawTri(t);
+    t.x   += t.vx;
+    t.y   += t.vy;
+    t.rot += t.vrot;
+    if (t.y + t.size < 0) {
+      Object.assign(t, mkTri(), { y: H + t.size, x: Math.random() * W });
+    }
+  });
+
+  requestAnimationFrame(frame);
+}
+
+frame();
+</script>
+</body>
+</html>
